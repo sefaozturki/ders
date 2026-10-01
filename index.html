@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lütfen bekleyin</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #fff;
+    color: #000;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+  p { font-size: 1.4rem; line-height: 1.5; margin: 0; max-width: 28rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <div>
+    <div id="bekle">
+      <p>Lütfen bekleyin, ders bittikten sonra bu bölüm açılacak.</p>
+    </div>
+    <div id="acik" hidden>
+      <p>Beklenen davetli sizsiniz…</p>
+    </div>
+  </div>
+
+<script>
+  // >>> kontrol.html'deki KONU ile AYNI olmalı. Tahmin edilemez bir şey yaz. <<<
+  const KONU = "bekle-q7x2m9k4vt8r3zp5";
+  const URL_BASE = "https://ntfy.sh/" + KONU;
+
+  const bekle = document.getElementById("bekle");
+  const acik = document.getElementById("acik");
+
+  function goster(acikMi) {
+    bekle.hidden = acikMi;
+    acik.hidden = !acikMi;
+  }
+
+  // Sayfayı sonradan açanlar için: son 12 saatteki mesajlara bak, sonuncusu geçerli
+  async function durumuSor() {
+    try {
+      const r = await fetch(URL_BASE + "/json?poll=1&since=12h");
+      const metin = await r.text();
+      let son = null;
+      metin.split("\n").forEach(function (satir) {
+        if (!satir.trim()) return;
+        try {
+          const m = JSON.parse(satir);
+          if (m.event === "message") son = m.message.trim();
+        } catch (e) {}
+      });
+      if (son === "ac") goster(true);
+      else if (son === "kapat") goster(false);
+    } catch (e) {}
+  }
+
+  // Canlı dinleme: butona basınca anında değişsin
+  function dinle() {
+    const es = new EventSource(URL_BASE + "/sse");
+    es.onmessage = function (ev) {
+      try {
+        const m = JSON.parse(ev.data);
+        if (m.event !== "message") return;
+        const t = m.message.trim();
+        if (t === "ac") goster(true);
+        else if (t === "kapat") goster(false);
+      } catch (e) {}
+    };
+  }
+
+  durumuSor();
+  dinle();
+  // Yedek: bağlantı koparsa diye 10 sn'de bir tekrar sor
+  setInterval(durumuSor, 10000);
+</script>
+</body>
+</html>

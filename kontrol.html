@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kontrol</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #111; color: #fff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px; padding: 24px; box-sizing: border-box; text-align: center;
+  }
+  button {
+    width: 100%; max-width: 340px; padding: 28px; font-size: 1.6rem; font-weight: 700;
+    border: 0; border-radius: 16px; cursor: pointer;
+  }
+  #baslat { background: #22c55e; color: #000; }
+  #sifirla { background: #333; color: #fff; font-size: 1.1rem; padding: 16px; }
+  #durum { min-height: 1.5em; opacity: .8; }
+</style>
+</head>
+<body>
+  <button id="baslat">BAŞLAT</button>
+  <button id="sifirla">Sıfırla (bekleme ekranına dön)</button>
+  <div id="durum"></div>
+
+<script>
+  // >>> index.html'deki KONU ile AYNI olmalı <<<
+  const KONU = "bekle-q7x2m9k4vt8r3zp5";
+  const durum = document.getElementById("durum");
+
+  async function gonder(mesaj, bilgi) {
+    durum.textContent = "Gönderiliyor...";
+    try {
+      const r = await fetch("https://ntfy.sh/" + KONU, { method: "POST", body: mesaj });
+      durum.textContent = r.ok ? bilgi : "Hata: " + r.status;
+    } catch (e) {
+      durum.textContent = "Gönderilemedi, internetini kontrol et.";
+    }
+  }
+
+  document.getElementById("baslat").onclick = function () { gonder("ac", "Gönderildi: herkeste açıldı ✅"); };
+  document.getElementById("sifirla").onclick = function () { gonder("kapat", "Sıfırlandı: bekleme ekranı ⏳"); };
+</script>
+</body>
+</html>
